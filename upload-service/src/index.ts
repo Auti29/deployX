@@ -6,9 +6,13 @@ import path from "node:path";
 import { getFilePaths } from './file.js';
 import {uploadtoR2} from './cloudflare.js';
 import {createClient } from "redis";
+import { fileURLToPath } from 'node:url';
 
 const publisher = createClient();
 publisher.connect(); 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -29,10 +33,10 @@ app.post('/deploy', async (req, res) => {
     const id  = generate();
     await git.clone(repoUrl, path.join(path.dirname("dist/index.js"), `output/${id}`));
 
-    const files = await getFilePaths(path.join(path.dirname("dist/index.js"), `output/${id}`));
+    const files = await getFilePaths(path.join(__dirname, `output/${id}`));
     
     for(const file of files){
-        const result = await uploadtoR2(file, `output/${id}/${file.slice(path.dirname(file).length+1)}`);
+        const result = await uploadtoR2(file, `${file.slice(__dirname.length+1)}`);
     }
 
     //todo: add a check to ensure successful file uploads

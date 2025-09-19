@@ -1,5 +1,6 @@
 import { createClient } from "redis";
-import { pullFiles } from "./cloudflare.js";
+import {  pullFiles } from "./cloudflare.js";
+import buildProject from "./build.js";
 const subscriber  = createClient();
 subscriber.connect();
 
@@ -10,6 +11,8 @@ async function main(){
           const id = res?.element;
           
           await pullFiles(`output/${id}`);
+          await buildProject(id!);
+        //   await finalUpload(id!);
     }
 }
 main();

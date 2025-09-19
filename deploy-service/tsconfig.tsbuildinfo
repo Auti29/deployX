@@ -1,1 +1,1 @@
-{"root":["./src/cloudflare.ts","./src/index.ts"],"version":"5.9.2"}
+{"root":["./src/build.ts","./src/cloudflare.ts","./src/index.ts"],"version":"5.9.2"}

@@ -1,28 +1,23 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 
+function getFilePaths(currpath: string): string[] {
+    let res: string[] = [];
 
-async function getFilePaths(currpath: string): Promise<string[]>{
-    
-    const readFilesDirs = await fs.readdir(currpath);
+    const allContent = fs.readdirSync(currpath);
 
-
-    const res = await Promise.all(
-        readFilesDirs.map(async entity => {
-           const fullpath = path.resolve(currpath, entity);
-           const stat = await fs.stat(fullpath);
-           
-           if(stat.isDirectory()){
-               return getFilePaths(fullpath);
-           }
-           else{
-               return [fullpath];
-           }
-       })
-    );
-
-    return res.flat();
-    
+    allContent.forEach(entity => {
+      const fullpath = path.join(currpath, entity);
+      if(fs.statSync(fullpath).isDirectory()){
+        res = res.concat(getFilePaths(fullpath));
+      }else{
+        const normalized = fullpath.replace(/\\/g, "/");
+        res.push(normalized);
+      }
+    });
+    console.log(res);
+    return res;
 }
+
 
 export {getFilePaths}

@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { fileURLToPath } from "url";
 import path from "path";
 import fs from "fs";
+// import fs from "node:fs/promises";
 import {pipeline} from "stream";
 import { promisify } from "util";
 
@@ -76,4 +78,55 @@ export async function pullFiles(prefix: string) {
     console.error("Error while downloading files:", err);
     throw err;
   }
+}
+
+
+
+async function uploadtoR2(localFilePath: string, remoteFilePath: string){
+    const fileStream = fs.createReadStream(localFilePath);
+    try{
+    const uploader = new Upload({
+      client: s3Client,
+      params: {
+        Bucket: BUCKET!,
+        Key: remoteFilePath,
+        Body: fileStream,
+      },
+    });
+
+    uploader.on('httpUploadProgress', (progress) => {
+      console.log(`Upload progress: ${progress.loaded} / ${progress.total} bytes`);
+    });
+
+    await uploader.done();
+    console.log(`File uploaded: ${remoteFilePath}`);
+
+    }catch(err){
+        console.log("error occured while putting data into object store: ", err);
+        throw err;
+    }
+}
+
+
+function getFilePaths(currpath: string) {
+    let res: string[] = [];
+
+    const allContent = fs.readdirSync(currpath);
+
+    allContent.forEach(entity => {
+      const fullpath = path.join(currpath, entity);
+      if(fs.statSync(fullpath).isDirectory()){
+        // @ts-ignore
+        res = res.concat(getFilePaths(fullpath));
+      }else{
+        res.push(fullpath);
+      }
+    });
+    return res;
+  
+}
+
+
+ function finalUpload(id: string){
+
 }
