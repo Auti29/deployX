@@ -108,7 +108,7 @@ async function uploadtoR2(localFilePath: string, remoteFilePath: string){
 }
 
 
-function getFilePaths(currpath: string) {
+function getFilePaths(currpath: string): string[] {
     let res: string[] = [];
 
     const allContent = fs.readdirSync(currpath);
@@ -116,17 +116,21 @@ function getFilePaths(currpath: string) {
     allContent.forEach(entity => {
       const fullpath = path.join(currpath, entity);
       if(fs.statSync(fullpath).isDirectory()){
-        // @ts-ignore
         res = res.concat(getFilePaths(fullpath));
       }else{
-        res.push(fullpath);
+          const normalized = fullpath.replace(/\\/g, "/");
+          res.push(normalized);
       }
     });
     return res;
-  
 }
 
 
- function finalUpload(id: string){
+ export async function finalUpload(id: string){
+    const files = await getFilePaths(path.join(__dirname, `output/${id}/dist`));
+    
+    for(const file of files){
+        const result = await uploadtoR2(`${file}`, `dist/${file.slice(__dirname.length+8)}`);
+    }
 
 }

@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import {  pullFiles } from "./cloudflare.js";
+import {  finalUpload, pullFiles } from "./cloudflare.js";
 import buildProject from "./build.js";
 const subscriber  = createClient();
 subscriber.connect();
@@ -12,7 +12,7 @@ async function main(){
           
           await pullFiles(`output/${id}`);
           await buildProject(id!);
-        //   await finalUpload(id!);
+          await finalUpload(id!);
     }
 }
 main();
